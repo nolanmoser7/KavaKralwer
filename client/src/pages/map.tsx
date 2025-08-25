@@ -44,21 +44,23 @@ export default function Map() {
   }, []);
 
   useEffect(() => {
-    if (mapRef.current && userLocation) {
+    if (mapRef.current && userLocation && !mapInstanceRef.current) {
       initializeMap();
     }
-  }, [userLocation, bars]);
+  }, [userLocation]);
+
+  // Separate effect for updating bar markers when bars data changes
+  useEffect(() => {
+    if (mapInstanceRef.current && bars.length > 0) {
+      updateBarMarkers();
+    }
+  }, [bars]);
 
   const initializeMap = async () => {
     if (!mapRef.current || !userLocation) return;
 
     try {
       await loadGoogleMaps();
-      
-      // Clear any existing map instance
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current = null;
-      }
       
       const map = new (window as any).google.maps.Map(mapRef.current, {
         center: userLocation,
@@ -97,26 +99,20 @@ export default function Map() {
                 return;
               }
 
-              // If the API returned a recommended viewport (e.g., for a city or region),
-              // fit the map to it; otherwise just center and zoom.
+              // Recommended pattern for proper zoom handling
               if (place.geometry.viewport) {
                 map.fitBounds(place.geometry.viewport);
+                // Bump zoom after bounds settle for maximum zoom
+                const once = map.addListener("idle", () => {
+                  once.remove();
+                  map.setZoom(19); // max zoom
+                });
               } else if (place.geometry.location) {
                 map.setCenter(place.geometry.location);
-                map.setZoom(15); // good level for a single venue
+                map.setZoom(19);
               }
 
-              // Update user location to searched place
-              const lat = typeof place.geometry.location.lat === "function"
-                ? place.geometry.location.lat()
-                : place.geometry.location.lat;
-              const lng = typeof place.geometry.location.lng === "function"
-                ? place.geometry.location.lng()
-                : place.geometry.location.lng;
-              
-              setUserLocation({ lat, lng });
-              
-              // Set the selected place to show the card
+              // Set the selected place to show the card (don't update userLocation to prevent map reset)
               setSelectedPlace(place);
               setSelectedBar(null); // Clear any selected bar
               
@@ -149,36 +145,43 @@ export default function Map() {
         },
       });
 
-      // Add bar markers
-      (bars as any[]).forEach((bar: any) => {
-        const lat = parseFloat(bar.latitude);
-        const lng = parseFloat(bar.longitude);
-        
-        if (isNaN(lat) || isNaN(lng)) return;
-
-        const marker = new (window as any).google.maps.Marker({
-          position: { lat, lng },
-          map,
-          title: bar.name,
-          icon: {
-            url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="#FF6B35">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#FF6B35"/>
-                <circle cx="12" cy="9" r="2" fill="#fff"/>
-              </svg>
-            `),
-            scaledSize: new (window as any).google.maps.Size(32, 32),
-            anchor: new (window as any).google.maps.Point(16, 32),
-          },
-        });
-
-        marker.addListener("click", () => {
-          setSelectedBar(bar);
-        });
-      });
+      // Initial bar markers will be added by updateBarMarkers
+      updateBarMarkers();
     } catch (error) {
       console.error("Error loading Google Maps:", error);
     }
+  };
+
+  const updateBarMarkers = () => {
+    if (!mapInstanceRef.current) return;
+
+    // Add bar markers
+    (bars as any[]).forEach((bar: any) => {
+      const lat = parseFloat(bar.latitude);
+      const lng = parseFloat(bar.longitude);
+      
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      const marker = new (window as any).google.maps.Marker({
+        position: { lat, lng },
+        map: mapInstanceRef.current,
+        title: bar.name,
+        icon: {
+          url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="#FF6B35">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#FF6B35"/>
+              <circle cx="12" cy="9" r="2" fill="#fff"/>
+            </svg>
+          `),
+          scaledSize: new (window as any).google.maps.Size(32, 32),
+          anchor: new (window as any).google.maps.Point(16, 32),
+        },
+      });
+
+      marker.addListener("click", () => {
+        setSelectedBar(bar);
+      });
+    });
   };
 
   const centerOnUser = () => {
