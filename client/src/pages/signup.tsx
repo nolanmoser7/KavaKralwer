@@ -136,7 +136,7 @@ export default function Signup() {
               />
               <Button
                 type="submit"
-                className="w-full bg-coral hover:bg-coral/90 text-white font-semibold py-3 rounded-xl"
+                className="w-full bg-blue-400 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl"
                 disabled={isLoading}
                 data-testid="button-signup"
               >
