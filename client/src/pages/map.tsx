@@ -105,10 +105,18 @@ export default function Map() {
                 return;
               }
 
+              // Optional: ignore non-kava picks
+              const nm = (place.name ?? "").toLowerCase();
+              const ty = (place.types ?? []).map(t => t.toLowerCase());
+              const looksVenue = ty.some(t => ["bar", "cafe", "night_club"].includes(t));
+              if (!(nm.includes("kava") || (nm.includes("lounge") && looksVenue))) {
+                // Not obviously kava; do nothing (or show a toast)
+                return;
+              }
+
               // Recommended pattern for proper zoom handling
               if (place.geometry.viewport) {
                 map.fitBounds(place.geometry.viewport);
-                // Bump zoom after bounds settle for maximum zoom
                 const once = map.addListener("idle", () => {
                   once.remove();
                   map.setZoom(19); // max zoom
@@ -116,6 +124,15 @@ export default function Map() {
               } else if (place.geometry.location) {
                 map.setCenter(place.geometry.location);
                 map.setZoom(19);
+              }
+
+              // Optionally drop a marker for the selected place
+              if (place.geometry.location) {
+                new (window as any).google.maps.Marker({ 
+                  map, 
+                  position: place.geometry.location, 
+                  title: place.name 
+                });
               }
 
               // Set the selected place to show the card (don't update userLocation to prevent map reset)
