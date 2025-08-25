@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Search, Filter, MapPin } from "lucide-react";
 import { loadGoogleMaps, createAutocomplete, panToPlace } from "@/lib/maps";
+import { searchKavaPlaces } from "@/lib/kavaSearch";
+import { renderPlaces, debounce } from "@/lib/markers";
 import ShellRating from "@/components/shell-rating";
 
 export default function Map() {
@@ -151,6 +153,14 @@ export default function Map() {
 
       // Initial bar markers will be added by updateBarMarkers
       updateBarMarkers();
+
+      // Initial kava place search
+      searchKavaPlaces(map, 20000, true).then(results => renderPlaces(map, results));
+
+      // Refresh kava places when user pans/zooms, but debounce to save quota
+      map.addListener("idle", debounce(() => {
+        searchKavaPlaces(map, 20000, true).then(results => renderPlaces(map, results));
+      }, 600));
     } catch (error) {
       console.error("Error loading Google Maps:", error);
     }
