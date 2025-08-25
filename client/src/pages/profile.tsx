@@ -26,12 +26,23 @@ export default function Profile() {
     try {
       // Clear all cached data
       queryClient.clear();
-      // Redirect to logout endpoint, which will redirect to landing page
-      window.location.href = "/api/logout";
+      
+      // Call the logout endpoint for custom auth
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      
+      if (response.ok) {
+        // Force redirect to home, which will show landing page since user is logged out
+        window.location.href = "/";
+      } else {
+        throw new Error("Logout failed");
+      }
     } catch (error) {
       console.error("Logout error:", error);
-      // Fallback - force redirect to home which will show landing page
-      setLocation("/");
+      // Force redirect to home - the authentication check will redirect to landing
+      window.location.href = "/";
     }
   };
 
