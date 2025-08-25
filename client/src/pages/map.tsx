@@ -9,10 +9,10 @@ import ShellRating from "@/components/shell-rating";
 
 export default function Map() {
   const mapRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const [selectedBar, setSelectedBar] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [searchValue, setSearchValue] = useState("");
   const [autocomplete, setAutocomplete] = useState<any>(null);
 
   const { data: bars = [] } = useQuery({
@@ -78,28 +78,42 @@ export default function Map() {
 
       mapInstanceRef.current = map;
 
-      // Initialize Places Autocomplete
-      const searchInput = document.querySelector('[data-testid="input-search-area"]') as HTMLInputElement;
-      if (searchInput && (window as any).google?.maps?.places) {
-        const autocompleteService = new (window as any).google.maps.places.Autocomplete(searchInput);
-        autocompleteService.bindTo('bounds', map);
-        
-        autocompleteService.addListener('place_changed', () => {
-          const place = autocompleteService.getPlace();
-          if (place.geometry) {
-            map.setCenter(place.geometry.location);
-            map.setZoom(15);
+      // Initialize Places Autocomplete with a slight delay to ensure input is rendered
+      setTimeout(() => {
+        if (searchInputRef.current && (window as any).google?.maps?.places) {
+          try {
+            const autocompleteService = new (window as any).google.maps.places.Autocomplete(searchInputRef.current);
+            autocompleteService.bindTo('bounds', map);
             
-            // Update user location to searched place
-            setUserLocation({
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng()
+            autocompleteService.addListener('place_changed', () => {
+              const place = autocompleteService.getPlace();
+              console.log('Place selected:', place); // Debug log
+              
+              if (place.geometry && place.geometry.location) {
+                const newLocation = {
+                  lat: place.geometry.location.lat(),
+                  lng: place.geometry.location.lng()
+                };
+                
+                map.setCenter(newLocation);
+                map.setZoom(15);
+                
+                // Update user location to searched place
+                setUserLocation(newLocation);
+                
+                // Clear the search input
+                if (searchInputRef.current) {
+                  searchInputRef.current.value = place.name || place.formatted_address || '';
+                }
+              }
             });
+            
+            setAutocomplete(autocompleteService);
+          } catch (error) {
+            console.error('Error initializing autocomplete:', error);
           }
-        });
-        
-        setAutocomplete(autocompleteService);
-      }
+        }
+      }, 100);
 
       // Add user location marker
       new (window as any).google.maps.Marker({
@@ -180,11 +194,11 @@ export default function Map() {
       <div className="absolute top-6 left-4 right-4 z-20">
         <div className="backdrop-blur-glass rounded-2xl p-4 shadow-lg">
           <div className="relative">
-            <Input 
+            <input
+              ref={searchInputRef}
+              type="text"
               placeholder="Search places..." 
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full p-3 pl-10 rounded-xl border-0 focus:ring-2 focus:ring-coral"
+              className="w-full p-3 pl-10 rounded-xl border-0 focus:ring-2 focus:ring-coral bg-white text-gray-900"
               data-testid="input-search-area"
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
