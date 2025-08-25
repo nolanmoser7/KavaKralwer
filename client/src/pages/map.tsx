@@ -105,18 +105,20 @@ export default function Map() {
                 console.log('Centering map on:', newLocation); // Debug log
                 console.log('Current zoom before:', map.getZoom()); // Debug current zoom
                 
-                // Use setOptions to change both center and zoom at once
-                map.setOptions({
-                  center: newLocation,
-                  zoom: 16
-                });
+                // First center the map, then zoom in for dramatic effect
+                map.setCenter(newLocation);
+                
+                // Zoom in gradually for more obvious visual feedback
+                setTimeout(() => {
+                  map.setZoom(18);  // Street-level zoom for dramatic effect
+                }, 200);
                 
                 // Alternative: force zoom after a brief delay
                 setTimeout(() => {
                   console.log('Zoom after timeout:', map.getZoom());
-                  if (map.getZoom() !== 16) {
-                    map.setZoom(16);
-                    console.log('Force set zoom to 16');
+                  if (map.getZoom() !== 18) {
+                    map.setZoom(18);
+                    console.log('Force set zoom to 18');
                   }
                 }, 100);
                 
