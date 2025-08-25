@@ -86,7 +86,11 @@ export default function Map() {
         if (searchInputRef.current && (window as any).google?.maps?.places) {
           try {
             const autocomplete = new (window as any).google.maps.places.Autocomplete(searchInputRef.current, {
-              fields: ["place_id", "name", "formatted_address", "types", "geometry"],
+              fields: [
+                "place_id", "name", "formatted_address", "types", "geometry", 
+                "rating", "user_ratings_total", "price_level", "opening_hours",
+                "formatted_phone_number", "website", "photos", "address_components"
+              ],
               types: ["establishment"],
             });
             
@@ -274,32 +278,99 @@ export default function Map() {
       {/* Place Info Card */}
       {selectedPlace && (
         <Card className="absolute bottom-20 left-4 right-4 bg-white rounded-2xl shadow-xl p-4 transform transition-transform duration-300">
-          <div className="flex items-center space-x-3">
-            <div className="w-16 h-16 bg-gradient-to-br from-ocean to-teal rounded-xl flex items-center justify-center text-white text-xl font-bold">
-              📍
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="flex items-start space-x-3">
+              <div className="w-16 h-16 bg-gradient-to-br from-ocean to-teal rounded-xl flex items-center justify-center text-white text-xl font-bold">
+                📍
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-800 text-lg truncate" data-testid="text-selected-place-name">
+                  {selectedPlace.name || 'Unknown Place'}
+                </h3>
+                <p className="text-gray-500 text-sm" data-testid="text-selected-place-address">
+                  {selectedPlace.formatted_address}
+                </p>
+                <span className="text-ocean text-xs font-medium uppercase" data-testid="text-selected-place-type">
+                  {selectedPlace.types ? selectedPlace.types[0].replace(/_/g, ' ') : 'Location'}
+                </span>
+              </div>
+              <Button 
+                size="icon" 
+                variant="ghost"
+                className="text-ocean flex-shrink-0"
+                onClick={() => setSelectedPlace(null)}
+                data-testid="button-close-place-card"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </Button>
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-800" data-testid="text-selected-place-name">
-                {selectedPlace.name || selectedPlace.formatted_address}
-              </h3>
+
+            {/* Details */}
+            <div className="space-y-2">
+              {/* Rating */}
               {selectedPlace.rating && (
-                <ShellRating rating={selectedPlace.rating} />
+                <div className="flex items-center space-x-2">
+                  <ShellRating rating={selectedPlace.rating} />
+                  {selectedPlace.user_ratings_total && (
+                    <span className="text-sm text-gray-500" data-testid="text-place-reviews">
+                      ({selectedPlace.user_ratings_total} reviews)
+                    </span>
+                  )}
+                </div>
               )}
-              <span className="text-ocean text-sm font-medium" data-testid="text-selected-place-type">
-                {selectedPlace.types ? selectedPlace.types[0].replace(/_/g, ' ').toUpperCase() : 'Location'}
-              </span>
+
+              {/* Price Level */}
+              {selectedPlace.price_level && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">Price:</span>
+                  <span className="text-sm font-medium text-green-600" data-testid="text-place-price">
+                    {'$'.repeat(selectedPlace.price_level)}
+                  </span>
+                </div>
+              )}
+
+              {/* Hours */}
+              {selectedPlace.opening_hours && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">Hours:</span>
+                  <span 
+                    className={`text-sm font-medium ${
+                      selectedPlace.opening_hours.open_now ? 'text-green-600' : 'text-red-600'
+                    }`}
+                    data-testid="text-place-hours"
+                  >
+                    {selectedPlace.opening_hours.open_now ? 'Open now' : 'Closed'}
+                  </span>
+                </div>
+              )}
+
+              {/* Contact Info */}
+              <div className="flex items-center space-x-4">
+                {selectedPlace.formatted_phone_number && (
+                  <a 
+                    href={`tel:${selectedPlace.formatted_phone_number}`}
+                    className="text-sm text-ocean hover:underline"
+                    data-testid="link-place-phone"
+                  >
+                    📞 {selectedPlace.formatted_phone_number}
+                  </a>
+                )}
+                {selectedPlace.website && (
+                  <a 
+                    href={selectedPlace.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-ocean hover:underline"
+                    data-testid="link-place-website"
+                  >
+                    🌐 Website
+                  </a>
+                )}
+              </div>
             </div>
-            <Button 
-              size="icon" 
-              variant="ghost"
-              className="text-ocean"
-              onClick={() => setSelectedPlace(null)}
-              data-testid="button-close-place-card"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
           </div>
         </Card>
       )}
