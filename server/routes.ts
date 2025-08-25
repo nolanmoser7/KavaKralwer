@@ -1,20 +1,59 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertBarSchema, insertReviewSchema, insertCheckInSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated, signup, login } from "./auth";
+import { insertBarSchema, insertReviewSchema, insertCheckInSchema, signupSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  setupAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.post('/api/auth/signup', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const user = await signup(req.body);
+      (req.session as any).userId = user.id;
+      (req.session as any).userEmail = user.email;
+      res.status(201).json({ message: "Account created successfully", user });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Signup failed" });
+    }
+  });
+
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const user = await login(req.body);
+      (req.session as any).userId = user.id;
+      (req.session as any).userEmail = user.email;
+      res.json({ message: "Login successful", user });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(401).json({ message: error instanceof Error ? error.message : "Login failed" });
+    }
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ message: "Logout successful" });
+    });
+  });
+
+  app.get('/api/auth/user', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user!.id;
       const user = await storage.getUser(userId);
-      res.json(user);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      // Don't send password in response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -81,9 +120,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/bars/:barId/reviews', isAuthenticated, async (req: any, res) => {
+  app.post('/api/bars/:barId/reviews', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id;
       const reviewData = {
         ...req.body,
         barId: req.params.barId,
@@ -100,9 +139,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check-in routes
-  app.post('/api/bars/:barId/checkin', isAuthenticated, async (req: any, res) => {
+  app.post('/api/bars/:barId/checkin', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id;
       const checkInData = {
         ...req.body,
         barId: req.params.barId,
@@ -118,9 +157,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/user/checkins', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/checkins', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id;
       const checkIns = await storage.getUserCheckIns(userId);
       res.json(checkIns);
     } catch (error) {
@@ -130,9 +169,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Favorite routes
-  app.get('/api/user/favorites', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/favorites', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id;
       const favorites = await storage.getUserFavorites(userId);
       res.json(favorites);
     } catch (error) {
@@ -141,9 +180,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/bars/:barId/favorite', isAuthenticated, async (req: any, res) => {
+  app.post('/api/bars/:barId/favorite', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id;
       const barId = req.params.barId;
       
       const isFav = await storage.isFavorite(userId, barId);
@@ -172,9 +211,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User stats routes
-  app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/stats', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id;
       const stats = await storage.getUserStats(userId);
       res.json(stats);
     } catch (error) {
@@ -184,9 +223,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Achievement routes
-  app.get('/api/user/achievements', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/achievements', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.id;
       const achievements = await storage.getUserAchievements(userId);
       res.json(achievements);
     } catch (error) {

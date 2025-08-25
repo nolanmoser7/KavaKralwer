@@ -3,11 +3,11 @@ import tropicalBg from "@assets/Apphomescreennotxt_1756143091638.png";
 
 export default function Landing() {
   const handleGetStarted = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/signup";
   };
 
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/login";
   };
 
   return (
