@@ -12,6 +12,7 @@ export default function Map() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const [selectedBar, setSelectedBar] = useState<any>(null);
+  const [selectedPlace, setSelectedPlace] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [autocomplete, setAutocomplete] = useState<any>(null);
 
@@ -128,6 +129,10 @@ export default function Map() {
                 
                 // Update user location to searched place
                 setUserLocation(newLocation);
+                
+                // Set the selected place to show the card
+                setSelectedPlace(place);
+                setSelectedBar(null); // Clear any selected bar
                 
                 // Update the search input with place name
                 if (searchInputRef.current) {
@@ -259,7 +264,7 @@ export default function Map() {
         </Button>
       </div>
 
-      {/* Quick Info Card */}
+      {/* Bar Info Card */}
       {selectedBar && (
         <Card className="absolute bottom-20 left-4 right-4 bg-white rounded-2xl shadow-xl p-4 transform transition-transform duration-300">
           <div className="flex items-center space-x-3">
@@ -285,6 +290,39 @@ export default function Map() {
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Place Info Card */}
+      {selectedPlace && (
+        <Card className="absolute bottom-20 left-4 right-4 bg-white rounded-2xl shadow-xl p-4 transform transition-transform duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-16 h-16 bg-gradient-to-br from-ocean to-teal rounded-xl flex items-center justify-center text-white text-xl font-bold">
+              📍
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-800" data-testid="text-selected-place-name">
+                {selectedPlace.name || selectedPlace.formatted_address}
+              </h3>
+              {selectedPlace.rating && (
+                <ShellRating rating={selectedPlace.rating} />
+              )}
+              <span className="text-ocean text-sm font-medium" data-testid="text-selected-place-type">
+                {selectedPlace.types ? selectedPlace.types[0].replace(/_/g, ' ').toUpperCase() : 'Location'}
+              </span>
+            </div>
+            <Button 
+              size="icon" 
+              variant="ghost"
+              className="text-ocean"
+              onClick={() => setSelectedPlace(null)}
+              data-testid="button-close-place-card"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </Button>
           </div>
