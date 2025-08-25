@@ -26,9 +26,9 @@ export default function Landing() {
             Kava Krawler
           </h1>
           <div className="flex justify-center mb-4">
-            <i className="fas fa-seedling text-4xl text-tropical mx-2"></i>
-            <i className="fas fa-coconut text-4xl text-bamboo mx-2"></i>
-            <i className="fas fa-water text-4xl text-teal mx-2"></i>
+            <span className="text-4xl mx-2">🌱</span>
+            <span className="text-4xl mx-2">🥥</span>
+            <span className="text-4xl mx-2">🌊</span>
           </div>
           <p className="text-xl font-medium opacity-90" data-testid="text-subtitle">
             Discover Tropical Vibes
