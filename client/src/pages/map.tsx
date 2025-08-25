@@ -242,7 +242,7 @@ export default function Map() {
       </div>
 
       {/* Current Location */}
-      <div className="absolute bottom-32 right-4 z-20">
+      <div className="absolute z-20" style={{ bottom: '153px', right: '13px' }}>
         <Button 
           size="icon"
           onClick={centerOnUser}
