@@ -105,14 +105,18 @@ export default function Map() {
                 console.log('Centering map on:', newLocation); // Debug log
                 console.log('Current zoom before:', map.getZoom()); // Debug current zoom
                 
-                // Instantly snap to location at max zoom - no animation
-                map.setOptions({
-                  center: newLocation,
-                  zoom: 21,
-                  disableDefaultUI: false
-                });
+                // Force maximum zoom with multiple approaches
+                map.setCenter(newLocation);
+                map.setZoom(21);
                 
-                console.log('Instantly snapped to location at max zoom (21)');
+                // Also try fitting bounds for a very small area around the point
+                const bounds = new (window as any).google.maps.LatLngBounds();
+                const offset = 0.001; // Very small offset for maximum zoom
+                bounds.extend(new (window as any).google.maps.LatLng(lat + offset, lng + offset));
+                bounds.extend(new (window as any).google.maps.LatLng(lat - offset, lng - offset));
+                map.fitBounds(bounds);
+                
+                console.log('Applied maximum zoom with bounds:', bounds);
                 
                 // Update user location to searched place
                 setUserLocation(newLocation);
