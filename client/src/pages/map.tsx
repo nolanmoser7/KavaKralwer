@@ -105,11 +105,14 @@ export default function Map() {
                 console.log('Centering map on:', newLocation); // Debug log
                 console.log('Current zoom before:', map.getZoom()); // Debug current zoom
                 
-                // Center and max zoom for maximum visual impact
-                map.setCenter(newLocation);
-                map.setZoom(21); // Maximum zoom level
+                // Instantly snap to location at max zoom - no animation
+                map.setOptions({
+                  center: newLocation,
+                  zoom: 21,
+                  disableDefaultUI: false
+                });
                 
-                console.log('Zoom set to maximum (21)');
+                console.log('Instantly snapped to location at max zoom (21)');
                 
                 // Update user location to searched place
                 setUserLocation(newLocation);
