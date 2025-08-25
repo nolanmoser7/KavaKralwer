@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { MapPin, Search, Heart, User } from "lucide-react";
+import { Home, Calendar, MapPin, Users, User } from "lucide-react";
 
 export default function BottomNavigation() {
   const [location, setLocation] = useLocation();
 
   const navItems = [
+    { path: "/", icon: Home, label: "Home" },
+    { path: "/events", icon: Calendar, label: "Events" },
     { path: "/map", icon: MapPin, label: "Map" },
-    { path: "/", icon: Search, label: "Explore" },
-    { path: "/activity", icon: Heart, label: "Activity" },
+    { path: "/activity", icon: Users, label: "Social" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 

@@ -9,6 +9,7 @@ import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import Home from "@/pages/home";
+import Events from "@/pages/events";
 import Map from "@/pages/map";
 import Activity from "@/pages/activity";
 import Profile from "@/pages/profile";
@@ -43,6 +44,7 @@ function Router() {
         ) : (
           <>
             <Route path="/" component={Home} />
+            <Route path="/events" component={Events} />
             <Route path="/map" component={Map} />
             <Route path="/activity" component={Activity} />
             <Route path="/profile" component={Profile} />
