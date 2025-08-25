@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import tropicalBg from "@assets/App homescreem_1756142355434.png";
 
 export default function Landing() {
   const handleGetStarted = () => {
@@ -10,7 +11,15 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen gradient-sunset flex items-center justify-center p-6">
+    <div 
+      className="min-h-screen flex items-center justify-center p-6"
+      style={{
+        backgroundImage: `url(${tropicalBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       <div className="text-center text-white">
         <div className="mb-6">
           <h1 className="font-display text-6xl font-bold mb-2 drop-shadow-lg" data-testid="title-kava-krawler">
