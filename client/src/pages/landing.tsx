@@ -32,14 +32,14 @@ export default function Landing() {
         <div className="space-y-4">
           <Button
             onClick={handleGetStarted}
-            className="w-64 bg-coral hover:bg-coral/90 text-white font-semibold py-4 px-8 rounded-full shadow-lg transition-all transform hover:scale-105"
+            className="w-64 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg transition-all transform hover:scale-105"
             data-testid="button-get-started"
           >
             GET STARTED
           </Button>
           <button
             onClick={handleLogin}
-            className="block w-64 mx-auto text-white/80 hover:text-white font-medium underline"
+            className="block w-64 mx-auto bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-2xl shadow-lg transition-all"
             data-testid="button-log-in"
           >
             Log In
