@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import tropicalBg from "@assets/App homescreem_1756142355434.png";
+import tropicalBg from "@assets/Apphomescreennotxt_1756143091638.png";
 
 export default function Landing() {
   const handleGetStarted = () => {
