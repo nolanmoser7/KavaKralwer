@@ -79,45 +79,54 @@ export default function Map() {
 
       mapInstanceRef.current = map;
 
-      // Initialize Places Autocomplete with helper function
+      // Initialize Places Autocomplete
       setTimeout(() => {
         if (searchInputRef.current && (window as any).google?.maps?.places) {
           try {
-            const autocompleteService = createAutocomplete(searchInputRef.current, map, {
-              onPlaceChanged: (place) => {
-                if (place.geometry?.location) {
-                  let lat, lng;
-                  
-                  // Handle different location formats
-                  if (typeof place.geometry.location.lat === 'function') {
-                    lat = place.geometry.location.lat();
-                    lng = place.geometry.location.lng();
-                  } else {
-                    lat = place.geometry.location.lat;
-                    lng = place.geometry.location.lng;
-                  }
-                  
-                  const newLocation = { lat, lng };
-                  
-                  // Use helper function for proper zoom/pan
-                  panToPlace(map, place);
-                  
-                  // Update user location to searched place
-                  setUserLocation(newLocation);
-                  
-                  // Set the selected place to show the card
-                  setSelectedPlace(place);
-                  setSelectedBar(null); // Clear any selected bar
-                  
-                  // Update the search input with place name
-                  if (searchInputRef.current) {
-                    searchInputRef.current.value = place.name || place.formatted_address || '';
-                  }
-                }
+            const autocomplete = new (window as any).google.maps.places.Autocomplete(searchInputRef.current, {
+              fields: ["place_id", "name", "formatted_address", "types", "geometry"],
+              types: ["establishment"],
+            });
+            
+            autocomplete.bindTo("bounds", map);
+
+            autocomplete.addListener("place_changed", () => {
+              const place = autocomplete.getPlace();
+              if (!place || !place.geometry) {
+                console.warn("No geometry returned for place:", place);
+                return;
+              }
+
+              // If the API returned a recommended viewport (e.g., for a city or region),
+              // fit the map to it; otherwise just center and zoom.
+              if (place.geometry.viewport) {
+                map.fitBounds(place.geometry.viewport);
+              } else if (place.geometry.location) {
+                map.setCenter(place.geometry.location);
+                map.setZoom(15); // good level for a single venue
+              }
+
+              // Update user location to searched place
+              const lat = typeof place.geometry.location.lat === "function"
+                ? place.geometry.location.lat()
+                : place.geometry.location.lat;
+              const lng = typeof place.geometry.location.lng === "function"
+                ? place.geometry.location.lng()
+                : place.geometry.location.lng;
+              
+              setUserLocation({ lat, lng });
+              
+              // Set the selected place to show the card
+              setSelectedPlace(place);
+              setSelectedBar(null); // Clear any selected bar
+              
+              // Update the search input with place name
+              if (searchInputRef.current) {
+                searchInputRef.current.value = place.name || place.formatted_address || '';
               }
             });
             
-            setAutocomplete(autocompleteService);
+            setAutocomplete(autocomplete);
           } catch (error) {
             console.error('Error initializing autocomplete:', error);
           }
