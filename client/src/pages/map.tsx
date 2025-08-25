@@ -9,7 +9,7 @@ import ShellRating from "@/components/shell-rating";
 
 export default function Map() {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [selectedBar, setSelectedBar] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -52,7 +52,12 @@ export default function Map() {
     try {
       await loadGoogleMaps();
       
-      const map = new google.maps.Map(mapRef.current, {
+      // Clear any existing map instance
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current = null;
+      }
+      
+      const map = new (window as any).google.maps.Map(mapRef.current, {
         center: userLocation,
         zoom: 12,
         styles: [
@@ -72,7 +77,7 @@ export default function Map() {
       mapInstanceRef.current = map;
 
       // Add user location marker
-      new google.maps.Marker({
+      new (window as any).google.maps.Marker({
         position: userLocation,
         map,
         title: "Your Location",
@@ -83,18 +88,18 @@ export default function Map() {
               <circle cx="12" cy="12" r="3" fill="#fff"/>
             </svg>
           `),
-          scaledSize: new google.maps.Size(24, 24),
+          scaledSize: new (window as any).google.maps.Size(24, 24),
         },
       });
 
       // Add bar markers
-      bars.forEach((bar: any) => {
+      (bars as any[]).forEach((bar: any) => {
         const lat = parseFloat(bar.latitude);
         const lng = parseFloat(bar.longitude);
         
         if (isNaN(lat) || isNaN(lng)) return;
 
-        const marker = new google.maps.Marker({
+        const marker = new (window as any).google.maps.Marker({
           position: { lat, lng },
           map,
           title: bar.name,
@@ -105,8 +110,8 @@ export default function Map() {
                 <circle cx="12" cy="9" r="2" fill="#fff"/>
               </svg>
             `),
-            scaledSize: new google.maps.Size(32, 32),
-            anchor: new google.maps.Point(16, 32),
+            scaledSize: new (window as any).google.maps.Size(32, 32),
+            anchor: new (window as any).google.maps.Point(16, 32),
           },
         });
 
@@ -127,11 +132,12 @@ export default function Map() {
   };
 
   return (
-    <div className="screen relative">
+    <div className="pb-20 relative" style={{ height: 'calc(100vh - 80px)' }}>
       {/* Map Container */}
       <div 
         ref={mapRef} 
         className="w-full h-full bg-gradient-to-br from-ocean to-teal"
+        style={{ minHeight: '400px' }}
         data-testid="map-container"
       >
         {!userLocation && (
