@@ -105,18 +105,26 @@ export default function Map() {
                 console.log('Centering map on:', newLocation); // Debug log
                 console.log('Current zoom before:', map.getZoom()); // Debug current zoom
                 
-                // Force maximum zoom with multiple approaches
+                // Try aggressive zoom approach
+                console.log('Setting center to:', newLocation);
                 map.setCenter(newLocation);
-                map.setZoom(21);
                 
-                // Also try fitting bounds for a very small area around the point
-                const bounds = new (window as any).google.maps.LatLngBounds();
-                const offset = 0.001; // Very small offset for maximum zoom
-                bounds.extend(new (window as any).google.maps.LatLng(lat + offset, lng + offset));
-                bounds.extend(new (window as any).google.maps.LatLng(lat - offset, lng - offset));
-                map.fitBounds(bounds);
-                
-                console.log('Applied maximum zoom with bounds:', bounds);
+                // Force zoom multiple times with delays
+                setTimeout(() => {
+                  console.log('First zoom attempt to 21');
+                  map.setZoom(21);
+                  
+                  setTimeout(() => {
+                    console.log('Second zoom attempt to 20');
+                    map.setZoom(20);
+                    
+                    setTimeout(() => {
+                      console.log('Final zoom attempt to 19');
+                      map.setZoom(19);
+                      console.log('Final zoom level:', map.getZoom());
+                    }, 100);
+                  }, 100);
+                }, 100);
                 
                 // Update user location to searched place
                 setUserLocation(newLocation);
