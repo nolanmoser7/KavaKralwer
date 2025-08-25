@@ -12,6 +12,8 @@ export default function Map() {
   const mapInstanceRef = useRef<any>(null);
   const [selectedBar, setSelectedBar] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [searchValue, setSearchValue] = useState("");
+  const [autocomplete, setAutocomplete] = useState<any>(null);
 
   const { data: bars = [] } = useQuery({
     queryKey: ["/api/bars"],
@@ -75,6 +77,29 @@ export default function Map() {
       });
 
       mapInstanceRef.current = map;
+
+      // Initialize Places Autocomplete
+      const searchInput = document.querySelector('[data-testid="input-search-area"]') as HTMLInputElement;
+      if (searchInput && (window as any).google?.maps?.places) {
+        const autocompleteService = new (window as any).google.maps.places.Autocomplete(searchInput);
+        autocompleteService.bindTo('bounds', map);
+        
+        autocompleteService.addListener('place_changed', () => {
+          const place = autocompleteService.getPlace();
+          if (place.geometry) {
+            map.setCenter(place.geometry.location);
+            map.setZoom(15);
+            
+            // Update user location to searched place
+            setUserLocation({
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng()
+            });
+          }
+        });
+        
+        setAutocomplete(autocompleteService);
+      }
 
       // Add user location marker
       new (window as any).google.maps.Marker({
@@ -156,7 +181,9 @@ export default function Map() {
         <div className="backdrop-blur-glass rounded-2xl p-4 shadow-lg">
           <div className="relative">
             <Input 
-              placeholder="Search area..." 
+              placeholder="Search places..." 
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               className="w-full p-3 pl-10 rounded-xl border-0 focus:ring-2 focus:ring-coral"
               data-testid="input-search-area"
             />
