@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 import { 
   MapPin, 
   Star, 
@@ -21,8 +22,17 @@ export default function Profile() {
     retry: false,
   });
 
-  const handleSignOut = () => {
-    window.location.href = "/api/logout";
+  const handleSignOut = async () => {
+    try {
+      // Clear all cached data
+      queryClient.clear();
+      // Redirect to logout endpoint, which will redirect to landing page
+      window.location.href = "/api/logout";
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Fallback - force redirect to home which will show landing page
+      setLocation("/");
+    }
   };
 
   return (
