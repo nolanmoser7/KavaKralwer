@@ -164,3 +164,38 @@ export const defaultMapStyles: google.maps.MapTypeStyle[] = [
     stylers: [{ color: "#D4A574" }],
   },
 ];
+
+// --- Places Autocomplete wiring --- //
+export function attachAutocomplete(
+  inputEl: HTMLInputElement,
+  map: google.maps.Map,
+  onPlace?: (place: google.maps.places.PlaceResult) => void
+) {
+  // Bias results toward the viewport of the map
+  const ac = new google.maps.places.Autocomplete(inputEl, {
+    types: ["establishment"], // or ["geocode"] if you want addresses too
+    fields: ["place_id", "name", "geometry", "formatted_address"],
+  });
+  ac.bindTo("bounds", map);
+
+  ac.addListener("place_changed", () => {
+    const place = ac.getPlace();
+    if (!place || !place.geometry) {
+      console.warn("No geometry in place result", place);
+      return;
+    }
+
+    // Zoom/fit to the place
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport);
+    } else if (place.geometry.location) {
+      map.setCenter(place.geometry.location);
+      map.setZoom(15); // good level for a single venue
+    }
+
+    // Optional callback (e.g., drop a marker, update state)
+    onPlace?.(place);
+  });
+
+  return ac;
+}
