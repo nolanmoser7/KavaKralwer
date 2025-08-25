@@ -104,9 +104,11 @@ export default function Map() {
                 const newLocation = { lat, lng };
                 console.log('Centering map on:', newLocation); // Debug log
                 
-                // Center and zoom the map
-                map.setCenter(newLocation);
-                map.setZoom(15);
+                // Center and zoom the map with smooth animation
+                map.panTo(newLocation);
+                setTimeout(() => {
+                  map.setZoom(16); // Higher zoom for better focus
+                }, 300);
                 
                 // Update user location to searched place
                 setUserLocation(newLocation);
