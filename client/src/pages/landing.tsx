@@ -25,11 +25,6 @@ export default function Landing() {
           <h1 className="font-display text-6xl font-bold mb-2 drop-shadow-lg" data-testid="title-kava-krawler">
             Kava Krawler
           </h1>
-          <div className="flex justify-center mb-4">
-            <span className="text-4xl mx-2">🌱</span>
-            <span className="text-4xl mx-2">🥥</span>
-            <span className="text-4xl mx-2">🌊</span>
-          </div>
           <p className="text-xl font-medium opacity-90" data-testid="text-subtitle">
             Discover Tropical Vibes
           </p>
