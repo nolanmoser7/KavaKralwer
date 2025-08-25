@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginData, loginSchema } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import tropicalBg from "@assets/Apphomescreennotxt_1756143091638.png";
 
@@ -28,6 +28,10 @@ export default function Login() {
     setIsLoading(true);
     try {
       await apiRequest("POST", "/api/auth/login", data);
+      
+      // Invalidate auth query to refresh user state
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
       toast({
         title: "Welcome Back!",
         description: "You're now logged in. Happy exploring!",

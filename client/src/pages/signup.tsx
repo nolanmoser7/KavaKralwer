@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignupData, signupSchema } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import tropicalBg from "@assets/Apphomescreennotxt_1756143091638.png";
 
@@ -31,6 +31,10 @@ export default function Signup() {
     setIsLoading(true);
     try {
       await apiRequest("POST", "/api/auth/signup", data);
+      
+      // Invalidate auth query to refresh user state
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
       toast({
         title: "Account Created!",
         description: "Welcome to Kava Krawler! You can now explore bars and check in.",
