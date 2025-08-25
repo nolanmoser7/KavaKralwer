@@ -30,7 +30,7 @@ export default function Signup() {
   const onSubmit = async (data: SignupData) => {
     setIsLoading(true);
     try {
-      await apiRequest("/api/auth/signup", "POST", data);
+      await apiRequest("POST", "/api/auth/signup", data);
       toast({
         title: "Account Created!",
         description: "Welcome to Kava Krawler! You can now explore bars and check in.",
