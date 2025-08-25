@@ -103,12 +103,22 @@ export default function Map() {
                 
                 const newLocation = { lat, lng };
                 console.log('Centering map on:', newLocation); // Debug log
+                console.log('Current zoom before:', map.getZoom()); // Debug current zoom
                 
-                // Center and zoom the map with smooth animation
-                map.panTo(newLocation);
+                // Use setOptions to change both center and zoom at once
+                map.setOptions({
+                  center: newLocation,
+                  zoom: 16
+                });
+                
+                // Alternative: force zoom after a brief delay
                 setTimeout(() => {
-                  map.setZoom(16); // Higher zoom for better focus
-                }, 300);
+                  console.log('Zoom after timeout:', map.getZoom());
+                  if (map.getZoom() !== 16) {
+                    map.setZoom(16);
+                    console.log('Force set zoom to 16');
+                  }
+                }, 100);
                 
                 // Update user location to searched place
                 setUserLocation(newLocation);
