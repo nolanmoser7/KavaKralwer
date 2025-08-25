@@ -216,7 +216,7 @@ export default function Map() {
       </div>
 
       {/* Map Controls */}
-      <div className="absolute top-6 left-4 right-4 z-20">
+      <div className="absolute top-11 left-4 right-4 z-20">
         <div className="backdrop-blur-glass rounded-2xl p-4 shadow-lg">
           <div className="relative">
             <input
