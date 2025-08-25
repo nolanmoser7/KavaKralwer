@@ -277,7 +277,7 @@ export default function Map() {
 
       {/* Place Info Card */}
       {selectedPlace && (
-        <Card className="absolute bottom-20 left-4 right-4 bg-white rounded-2xl shadow-xl p-4 transform transition-transform duration-300">
+        <Card className="absolute bottom-6 left-4 right-4 bg-white rounded-2xl shadow-xl p-4 transform transition-transform duration-300">
           <div className="space-y-4">
             {/* Header */}
             <div className="flex items-start space-x-3">
