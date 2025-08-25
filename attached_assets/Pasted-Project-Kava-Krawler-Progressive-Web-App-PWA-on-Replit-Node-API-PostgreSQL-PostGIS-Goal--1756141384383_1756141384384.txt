@@ -1,0 +1,55 @@
+Project: Kava Krawler — Progressive Web App (PWA) on Replit + Node API + PostgreSQL (PostGIS)
+
+Goal
+Build a fast PWA that lets users discover kava/kratom bars near them, search/filter, check in, favorite, review with photos, submit missing bars, and track a personal Krawl. Host web + API on Replit now; later wrap the PWA for Google Play (TWA/Bubblewrap) and Apple App Store (PWABuilder).
+
+Architecture
+- Frontend: React 18 + Vite + TypeScript; React Router; TanStack Query; Zustand; React Hook Form + Zod; Google Maps JS SDK; vite-plugin-pwa (service worker + manifest)
+- Backend: Node 20 + Fastify; Zod; pg; Drizzle ORM (SQL migrations); jsonwebtoken; bcrypt; helmet; cors; rate limiting
+- Database: Replit SQL Database (PostgreSQL 16 on Neon) + PostGIS (spatial)
+- Deployments: Replit Static (web) + Autoscale/Reserved VM (API)
+- Analytics/Quality: PostHog (optional), Sentry (optional)
+
+Repo Layout (two Replit apps recommended)
+- kava-krawler-web/  (PWA)
+- kava-krawler-api/  (Fastify API + Drizzle + migrations)
+
+Web App — Scaffold & Setup
+1) Create Vite app (React + TS)
+   - npm create vite@latest kava-krawler-web -- --template react-ts
+   - cd kava-krawler-web
+   - npm i react-router-dom @tanstack/react-query zustand react-hook-form zod
+   - npm i -D vite-plugin-pwa workbox-window
+2) Maps + UI
+   - npm i @googlemaps/markerclusterer
+   - Add Google Maps JS loader (dynamic import) and cluster markers
+3) PWA config
+   - Add vite-plugin-pwa to vite.config.ts with:
+     - registerType: 'autoUpdate'
+     - includeAssets (icons), manifest (name, short_name, start_url, display: 'standalone', theme/background colors, icons)
+   - Create src/sw.ts for custom runtime caching (tile servers, bar photos, API GETs)
+4) Env (web)
+   - .env: VITE_API_URL=https://<api-url>  VITE_GOOGLE_MAPS_API_KEY=...
+5) Routes (Expo-style tabs feel, but web)
+   - /map  /explore  /activity  /profile
+   - /bar/:id  /submit-bar  /auth/sign-in  /auth/sign-up
+6) State/Data
+   - QueryClient provider; persist auth token in localStorage; platform-safe fallbacks
+7) Dev/Build
+   - npm run dev
+   - npm run build (outputs dist/ for static deployment)
+
+API — Scaffold & Setup
+1) Initialize API
+   - mkdir kava-krawler-api && cd kava-krawler-api
+   - npm init -y
+   - npm i fastify zod pg drizzle-orm drizzle-kit jsonwebtoken bcrypt helmet cors
+   - npx drizzle-kit init
+2) Connect DB (Replit SQL)
+   - Set DATABASE_URL in Replit secrets
+   - Enable PostGIS:
+     CREATE EXTENSION IF NOT EXISTS postgis;
+3) Drizzle schema (excerpt)
+   - bars (id uuid pk, name text, slug text unique, latitude double, longitude double, geom geometry(Point,4326), address/city/state/zip, website text, hours jsonb, offers_kava bool, offers_kratom bool, amenities jsonb, vibe text, created_at timestamptz default now())
+   - bar_photos (id uuid pk, bar_id uuid fk, bytes bytea, caption text, user_id uuid, created_at)
+   - reviews (id uuid pk, bar_id uuid, user_id uuid, rating in
