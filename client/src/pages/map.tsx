@@ -89,22 +89,34 @@ export default function Map() {
               const place = autocompleteService.getPlace();
               console.log('Place selected:', place); // Debug log
               
-              if (place.geometry && place.geometry.location) {
-                const newLocation = {
-                  lat: place.geometry.location.lat(),
-                  lng: place.geometry.location.lng()
-                };
+              if (place && place.geometry && place.geometry.location) {
+                let lat, lng;
                 
+                // Handle different location formats
+                if (typeof place.geometry.location.lat === 'function') {
+                  lat = place.geometry.location.lat();
+                  lng = place.geometry.location.lng();
+                } else {
+                  lat = place.geometry.location.lat;
+                  lng = place.geometry.location.lng;
+                }
+                
+                const newLocation = { lat, lng };
+                console.log('Centering map on:', newLocation); // Debug log
+                
+                // Center and zoom the map
                 map.setCenter(newLocation);
                 map.setZoom(15);
                 
                 // Update user location to searched place
                 setUserLocation(newLocation);
                 
-                // Clear the search input
+                // Update the search input with place name
                 if (searchInputRef.current) {
                   searchInputRef.current.value = place.name || place.formatted_address || '';
                 }
+              } else {
+                console.log('Place geometry not found:', place);
               }
             });
             
