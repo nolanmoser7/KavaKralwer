@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Search, Filter, MapPin } from "lucide-react";
-import { loadGoogleMaps } from "@/lib/maps";
+import { loadGoogleMaps, createAutocomplete, panToPlace } from "@/lib/maps";
 import ShellRating from "@/components/shell-rating";
 
 export default function Map() {
@@ -79,67 +79,41 @@ export default function Map() {
 
       mapInstanceRef.current = map;
 
-      // Initialize Places Autocomplete with a slight delay to ensure input is rendered
+      // Initialize Places Autocomplete with helper function
       setTimeout(() => {
         if (searchInputRef.current && (window as any).google?.maps?.places) {
           try {
-            const autocompleteService = new (window as any).google.maps.places.Autocomplete(searchInputRef.current);
-            autocompleteService.bindTo('bounds', map);
-            
-            autocompleteService.addListener('place_changed', () => {
-              const place = autocompleteService.getPlace();
-              console.log('Place selected:', place); // Debug log
-              
-              if (place && place.geometry && place.geometry.location) {
-                let lat, lng;
-                
-                // Handle different location formats
-                if (typeof place.geometry.location.lat === 'function') {
-                  lat = place.geometry.location.lat();
-                  lng = place.geometry.location.lng();
-                } else {
-                  lat = place.geometry.location.lat;
-                  lng = place.geometry.location.lng;
-                }
-                
-                const newLocation = { lat, lng };
-                console.log('Centering map on:', newLocation); // Debug log
-                console.log('Current zoom before:', map.getZoom()); // Debug current zoom
-                
-                // Try aggressive zoom approach
-                console.log('Setting center to:', newLocation);
-                map.setCenter(newLocation);
-                
-                // Force zoom multiple times with delays
-                setTimeout(() => {
-                  console.log('First zoom attempt to 21');
-                  map.setZoom(21);
+            const autocompleteService = createAutocomplete(searchInputRef.current, map, {
+              onPlaceChanged: (place) => {
+                if (place.geometry?.location) {
+                  let lat, lng;
                   
-                  setTimeout(() => {
-                    console.log('Second zoom attempt to 20');
-                    map.setZoom(20);
-                    
-                    setTimeout(() => {
-                      console.log('Final zoom attempt to 19');
-                      map.setZoom(19);
-                      console.log('Final zoom level:', map.getZoom());
-                    }, 100);
-                  }, 100);
-                }, 100);
-                
-                // Update user location to searched place
-                setUserLocation(newLocation);
-                
-                // Set the selected place to show the card
-                setSelectedPlace(place);
-                setSelectedBar(null); // Clear any selected bar
-                
-                // Update the search input with place name
-                if (searchInputRef.current) {
-                  searchInputRef.current.value = place.name || place.formatted_address || '';
+                  // Handle different location formats
+                  if (typeof place.geometry.location.lat === 'function') {
+                    lat = place.geometry.location.lat();
+                    lng = place.geometry.location.lng();
+                  } else {
+                    lat = place.geometry.location.lat;
+                    lng = place.geometry.location.lng;
+                  }
+                  
+                  const newLocation = { lat, lng };
+                  
+                  // Use helper function for proper zoom/pan
+                  panToPlace(map, place);
+                  
+                  // Update user location to searched place
+                  setUserLocation(newLocation);
+                  
+                  // Set the selected place to show the card
+                  setSelectedPlace(place);
+                  setSelectedBar(null); // Clear any selected bar
+                  
+                  // Update the search input with place name
+                  if (searchInputRef.current) {
+                    searchInputRef.current.value = place.name || place.formatted_address || '';
+                  }
                 }
-              } else {
-                console.log('Place geometry not found:', place);
               }
             });
             
