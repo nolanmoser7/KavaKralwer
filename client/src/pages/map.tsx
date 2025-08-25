@@ -226,14 +226,14 @@ export default function Map() {
       </div>
 
       {/* Map Controls */}
-      <div className="absolute top-6 left-4 right-4 z-20">
-        <div className="backdrop-blur-glass rounded-2xl p-4 shadow-lg">
+      <div className="absolute top-6 left-4 right-20 z-20">
+        <div className="backdrop-blur-glass rounded-2xl p-3 shadow-lg">
           <div className="relative">
             <input
               ref={searchInputRef}
               type="text"
               placeholder="Search places..." 
-              className="w-full p-3 pl-10 rounded-xl border-0 focus:ring-2 focus:ring-coral bg-white text-gray-900"
+              className="w-full p-2.5 pl-10 rounded-xl border-0 focus:ring-2 focus:ring-coral bg-white text-gray-900"
               data-testid="input-search-area"
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -242,7 +242,7 @@ export default function Map() {
       </div>
 
       {/* Filter Toggle */}
-      <div className="absolute top-24 right-4 z-20">
+      <div className="absolute top-6 right-4 z-20">
         <Button 
           size="icon"
           className="backdrop-blur-glass p-3 rounded-xl shadow-lg bg-white/90 hover:bg-white text-coral border-0"
