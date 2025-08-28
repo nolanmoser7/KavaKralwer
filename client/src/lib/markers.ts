@@ -25,10 +25,15 @@ export function renderPlaces(
   places: Place[],
   onClick?: (p: Place) => void
 ) {
+  console.log('renderPlaces called with', places.length, 'places');
   clearKavaMarkers();
   for (const p of places) {
     const pos = p.geometry?.location;
-    if (!pos) continue;
+    if (!pos) {
+      console.log('Skipping place without geometry:', p.name);
+      continue;
+    }
+    console.log('Creating marker for:', p.name, pos);
     const m = new google.maps.Marker({
       position: pos,
       map,
@@ -49,6 +54,7 @@ export function renderPlaces(
       m.addListener("click", () => onClick(p));
     }
   }
+  console.log('Total kava markers created:', kavaMarkers.length);
 }
 
 export function renderBars(

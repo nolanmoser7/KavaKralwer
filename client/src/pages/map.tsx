@@ -161,7 +161,9 @@ export default function Map() {
       // Initial bar markers will be added by updateBarMarkers
       updateBarMarkers();
 
+      console.log('Starting kava places search...');
       const results = await searchKavaPlaces(map, 20000, true);
+      console.log('Kava search results:', results.length, results);
       setKavaPlaces(results);
       renderPlaces(map, results, (place) => { setSelectedPlace(place); setSelectedBar(null); });
 
