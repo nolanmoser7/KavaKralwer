@@ -65,5 +65,40 @@ export async function searchKavaPlaces(
   });
 
   console.log('Final filtered results:', filtered.length);
-  return filtered;
+  
+  // Get detailed information for each place (phone, website, etc.)
+  console.log('Fetching detailed information for places...');
+  const detailedPlaces = await Promise.all(
+    filtered.map(place => 
+      new Promise<Place>((resolve) => {
+        if (!place.place_id) {
+          resolve(place);
+          return;
+        }
+        
+        svc.getDetails(
+          {
+            placeId: place.place_id,
+            fields: [
+              'place_id', 'name', 'formatted_address', 'geometry', 'types',
+              'rating', 'user_ratings_total', 'price_level', 'opening_hours',
+              'formatted_phone_number', 'website', 'photos'
+            ]
+          },
+          (result, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK && result) {
+              console.log(`Got details for ${result.name}: phone=${!!result.formatted_phone_number}, website=${!!result.website}`);
+              resolve(result);
+            } else {
+              console.log(`Failed to get details for ${place.name}:`, status);
+              resolve(place); // Fall back to basic info
+            }
+          }
+        );
+      })
+    )
+  );
+  
+  console.log('Final results with details:', detailedPlaces.length);
+  return detailedPlaces;
 }
