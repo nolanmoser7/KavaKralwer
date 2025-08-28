@@ -85,64 +85,62 @@ export default function Map() {
       mapInstanceRef.current = map;
 
       // Initialize Places Autocomplete
-      setTimeout(() => {
-        if (searchInputRef.current && (window as any).google?.maps?.places) {
-          try {
-            const autocomplete = new (window as any).google.maps.places.Autocomplete(searchInputRef.current, {
-              fields: [
-                "place_id", "name", "formatted_address", "types", "geometry", 
-                "rating", "user_ratings_total", "price_level", "opening_hours",
-                "formatted_phone_number", "website", "photos", "address_components"
-              ],
-              types: ["establishment"],
-            });
+      if (searchInputRef.current && (window as any).google?.maps?.places) {
+        try {
+          const autocomplete = new (window as any).google.maps.places.Autocomplete(searchInputRef.current, {
+            fields: [
+              "place_id", "name", "formatted_address", "types", "geometry", 
+              "rating", "user_ratings_total", "price_level", "opening_hours",
+              "formatted_phone_number", "website", "photos", "address_components"
+            ],
+            types: ["establishment"],
+          });
+          
+          autocomplete.bindTo("bounds", map);
+
+          autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (!place || !place.geometry) {
+              console.warn("No geometry returned for place:", place);
+              return;
+            }
+
+            // Always center and zoom to the selected place
+            if (place.geometry.viewport) {
+              map.fitBounds(place.geometry.viewport);
+              const once = map.addListener("idle", () => {
+                once.remove();
+                map.setZoom(17); // reasonable zoom level
+              });
+            } else if (place.geometry.location) {
+              map.setCenter(place.geometry.location);
+              map.setZoom(17);
+            }
+
+            // Add a marker for the selected place
+            if (place.geometry.location) {
+              new (window as any).google.maps.Marker({ 
+                map, 
+                position: place.geometry.location, 
+                title: place.name 
+              });
+            }
+
+            // Set the selected place to show the card
+            setSelectedPlace(place);
+            setSelectedBar(null); // Clear any selected bar
             
-            autocomplete.bindTo("bounds", map);
-
-            autocomplete.addListener("place_changed", () => {
-              const place = autocomplete.getPlace();
-              if (!place || !place.geometry) {
-                console.warn("No geometry returned for place:", place);
-                return;
-              }
-
-              // Always center and zoom to the selected place
-              if (place.geometry.viewport) {
-                map.fitBounds(place.geometry.viewport);
-                const once = map.addListener("idle", () => {
-                  once.remove();
-                  map.setZoom(17); // reasonable zoom level
-                });
-              } else if (place.geometry.location) {
-                map.setCenter(place.geometry.location);
-                map.setZoom(17);
-              }
-
-              // Add a marker for the selected place
-              if (place.geometry.location) {
-                new (window as any).google.maps.Marker({ 
-                  map, 
-                  position: place.geometry.location, 
-                  title: place.name 
-                });
-              }
-
-              // Set the selected place to show the card
-              setSelectedPlace(place);
-              setSelectedBar(null); // Clear any selected bar
-              
-              // Update the search input with place name
-              if (searchInputRef.current) {
-                searchInputRef.current.value = place.name || place.formatted_address || '';
-              }
-            });
-            
-            setAutocomplete(autocomplete);
-          } catch (error) {
-            console.error('Error initializing autocomplete:', error);
-          }
+            // Update the search input with place name
+            if (searchInputRef.current) {
+              searchInputRef.current.value = place.name || place.formatted_address || '';
+            }
+          });
+          
+          setAutocomplete(autocomplete);
+        } catch (error) {
+          console.error('Error initializing autocomplete:', error);
         }
-      }, 100);
+      }
 
       // Add user location marker
       new (window as any).google.maps.Marker({
