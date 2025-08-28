@@ -20,9 +20,11 @@ export async function searchKavaPlaces(
 
   const run = (keyword: string, type: "bar" | "cafe") =>
     new Promise<Place[]>((resolve) => {
+      console.log(`Searching for keyword: "${keyword}", type: "${type}"`);
       svc.nearbySearch(
         { location: center, radius: radiusMeters, keyword, type },
         (results: google.maps.places.PlaceResult[] | null, status: google.maps.places.PlacesServiceStatus) => {
+          console.log(`Search "${keyword}" + "${type}" returned:`, status, results?.length || 0, 'results');
           if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
             resolve([]);
           } else {
@@ -42,19 +44,32 @@ export async function searchKavaPlaces(
   if (includeKratom) calls.push(run("kratom", "bar"));
 
   const results = (await Promise.all(calls)).flat();
+  console.log('Raw search results before filtering:', results.length);
   const unique = uniqBy(results, p => p.place_id!);
+  console.log('Unique results after deduplication:', unique.length);
 
   // Final guard: keep obvious kava venues or lounges (exclude night_club)
   const filtered = unique.filter((p) => {
     const name = (p.name ?? "").toLowerCase();
     const types = (p.types ?? []).map((t: string) => t.toLowerCase());
     
+    console.log(`Filtering "${p.name}": types=[${types.join(', ')}]`);
+    
     // Exclude night clubs explicitly
-    if (types.includes("night_club")) return false;
+    if (types.includes("night_club")) {
+      console.log(`  -> EXCLUDED: night_club type`);
+      return false;
+    }
     
     const looksLikeVenue = types.some((t: string) => ["bar", "cafe"].includes(t));
-    return name.includes("kava") || (name.includes("lounge") && looksLikeVenue);
+    const hasKava = name.includes("kava");
+    const hasLounge = name.includes("lounge");
+    
+    const passes = hasKava || (hasLounge && looksLikeVenue);
+    console.log(`  -> ${passes ? 'KEEP' : 'REJECT'}: hasKava=${hasKava}, hasLounge=${hasLounge}, looksLikeVenue=${looksLikeVenue}`);
+    return passes;
   });
 
+  console.log('Final filtered results:', filtered.length);
   return filtered;
 }
