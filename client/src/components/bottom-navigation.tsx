@@ -6,9 +6,9 @@ export default function BottomNavigation() {
   const [location, setLocation] = useLocation();
 
   const navItems = [
-    { path: "/", icon: Home, label: "Home" },
-    { path: "/events", icon: Calendar, label: "Events" },
     { path: "/map", icon: MapPin, label: "Map" },
+    { path: "/events", icon: Calendar, label: "Events" },
+    { path: "/", icon: Home, label: "Home" },
     { path: "/activity", icon: Users, label: "Social" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
