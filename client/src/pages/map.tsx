@@ -161,19 +161,12 @@ export default function Map() {
       // Initial bar markers will be added by updateBarMarkers
       updateBarMarkers();
 
-      // Initial kava place search with auto-open functionality
-      searchKavaPlaces(map, 20000, true).then(results => {
-        setKavaPlaces(results);
-        renderPlaces(map, results, (place) => {
-          setSelectedPlace(place);
-          setSelectedBar(null);
-        });
-        
-        // Auto-open first/nearest result on load
-        if (results.length > 0 && !selectedPlace) {
-          setSelectedPlace(results[0]);
-        }
-      });
+      const results = await searchKavaPlaces(map, 20000, true);
+      setKavaPlaces(results);
+      renderPlaces(map, results, (place) => { setSelectedPlace(place); setSelectedBar(null); });
+
+      // Auto-open a card on load (first/nearest result)
+      if (results.length && !selectedPlace) setSelectedPlace(results[0]);
 
       // Refresh kava places when user pans/zooms, but debounce to save quota
       map.addListener("idle", debounce(() => {
