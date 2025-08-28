@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Search, Filter, MapPin } from "lucide-react";
 import { loadGoogleMaps, createAutocomplete, panToPlace } from "@/lib/maps";
 import { searchKavaPlaces } from "@/lib/kavaSearch";
-import { renderPlaces, renderBars, debounce } from "@/lib/markers";
+import { renderPlaces, renderBars, debounce, highlightPlaceMarker, unhighlightAllPlaceMarkers } from "@/lib/markers";
 import ShellRating from "@/components/shell-rating";
 
 export default function Map() {
@@ -58,6 +58,17 @@ export default function Map() {
       updateBarMarkers();
     }
   }, [bars]);
+
+  // Effect to highlight/unhighlight place markers when selection changes
+  useEffect(() => {
+    // Reset all markers to normal size first
+    unhighlightAllPlaceMarkers();
+    
+    // Highlight the selected place marker if there is one
+    if (selectedPlace && selectedPlace.place_id) {
+      highlightPlaceMarker(selectedPlace.place_id);
+    }
+  }, [selectedPlace]);
 
   const initializeMap = async () => {
     if (!mapRef.current || !userLocation) return;

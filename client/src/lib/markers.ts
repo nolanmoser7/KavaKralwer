@@ -4,10 +4,12 @@ import type { Place } from "./kavaSearch";
 
 let kavaMarkers: google.maps.Marker[] = [];
 let barMarkers: google.maps.Marker[] = [];
+let placeMarkerMap = new Map<string, google.maps.Marker>();
 
 export function clearKavaMarkers() {
   kavaMarkers.forEach(m => m.setMap(null));
   kavaMarkers = [];
+  placeMarkerMap.clear();
 }
 
 export function clearBarMarkers() {
@@ -38,23 +40,57 @@ export function renderPlaces(
       position: pos,
       map,
       title: p.name,
-      icon: {
-        url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="#DC2626">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#DC2626"/>
-            <circle cx="12" cy="9" r="2" fill="#fff"/>
-          </svg>
-        `),
-        scaledSize: new google.maps.Size(28, 28),
-        anchor: new google.maps.Point(14, 28),
-      },
+      icon: createPlaceIcon(28), // Normal size
     });
     kavaMarkers.push(m);
+    
+    // Store mapping for later highlighting
+    if (p.place_id) {
+      placeMarkerMap.set(p.place_id, m);
+    }
+    
     if (onClick) {
       m.addListener("click", () => onClick(p));
     }
   }
   console.log('Total kava markers created:', kavaMarkers.length);
+}
+
+// Function to create marker icon with specific size
+function createPlaceIcon(size: number) {
+  return {
+    url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="#DC2626">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#DC2626"/>
+        <circle cx="12" cy="9" r="2" fill="#fff"/>
+      </svg>
+    `),
+    scaledSize: new google.maps.Size(size, size),
+    anchor: new google.maps.Point(size / 2, size),
+  };
+}
+
+// Highlight a specific place marker
+export function highlightPlaceMarker(placeId: string) {
+  const marker = placeMarkerMap.get(placeId);
+  if (marker) {
+    marker.setIcon(createPlaceIcon(36)); // Larger size
+  }
+}
+
+// Reset a specific place marker to normal size
+export function unhighlightPlaceMarker(placeId: string) {
+  const marker = placeMarkerMap.get(placeId);
+  if (marker) {
+    marker.setIcon(createPlaceIcon(28)); // Normal size
+  }
+}
+
+// Reset all place markers to normal size
+export function unhighlightAllPlaceMarkers() {
+  placeMarkerMap.forEach(marker => {
+    marker.setIcon(createPlaceIcon(28)); // Normal size
+  });
 }
 
 export function renderBars(
