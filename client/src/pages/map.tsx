@@ -110,11 +110,11 @@ export default function Map() {
               map.fitBounds(place.geometry.viewport);
               const once = map.addListener("idle", () => {
                 once.remove();
-                map.setZoom(17); // reasonable zoom level
+                map.setZoom(19);
               });
             } else if (place.geometry.location) {
               map.setCenter(place.geometry.location);
-              map.setZoom(17);
+              map.setZoom(19);
             }
 
             // Add a marker for the selected place
