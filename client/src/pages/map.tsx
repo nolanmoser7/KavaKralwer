@@ -396,6 +396,19 @@ export default function Map() {
                     🌐 Website
                   </a>
                 )}
+                <a 
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${
+                    selectedPlace.geometry?.location ? 
+                    `${selectedPlace.geometry.location.lat()},${selectedPlace.geometry.location.lng()}` :
+                    encodeURIComponent(selectedPlace.formatted_address || selectedPlace.name || '')
+                  }`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-ocean hover:underline"
+                  data-testid="link-place-directions"
+                >
+                  🧭 Directions
+                </a>
               </div>
             </div>
           </div>
