@@ -66,7 +66,7 @@ export default function Map() {
       
       const map = new (window as any).google.maps.Map(mapRef.current, {
         center: userLocation,
-        zoom: 12,
+        zoom: 10,
         styles: [
           {
             featureType: "water",
