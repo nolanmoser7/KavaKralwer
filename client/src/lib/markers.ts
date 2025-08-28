@@ -9,7 +9,11 @@ export function clearMarkers() {
   markers = [];
 }
 
-export function renderPlaces(map: google.maps.Map, places: Place[]) {
+export function renderPlaces(
+  map: google.maps.Map,
+  places: Place[],
+  onClick?: (p: Place) => void
+) {
   clearMarkers();
   for (const p of places) {
     const pos = p.geometry?.location;
@@ -20,6 +24,9 @@ export function renderPlaces(map: google.maps.Map, places: Place[]) {
       title: p.name,
     });
     markers.push(m);
+    if (onClick) {
+      m.addListener("click", () => onClick(p));
+    }
   }
 }
 

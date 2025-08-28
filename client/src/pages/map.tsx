@@ -16,6 +16,7 @@ export default function Map() {
   const [selectedBar, setSelectedBar] = useState<any>(null);
   const [selectedPlace, setSelectedPlace] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [kavaPlaces, setKavaPlaces] = useState<any[]>([]);
   const [autocomplete, setAutocomplete] = useState<any>(null);
 
   const { data: bars = [] } = useQuery({
@@ -105,10 +106,16 @@ export default function Map() {
                 return;
               }
 
-              // Optional: ignore non-kava picks
+              // Optional: ignore non-kava picks (excluding night_club)
               const nm = (place.name ?? "").toLowerCase();
-              const ty = (place.types ?? []).map(t => t.toLowerCase());
-              const looksVenue = ty.some(t => ["bar", "cafe"].includes(t));
+              const ty = (place.types ?? []).map((t: string) => t.toLowerCase());
+              
+              // Exclude night clubs explicitly
+              if (ty.includes("night_club")) {
+                return;
+              }
+              
+              const looksVenue = ty.some((t: string) => ["bar", "cafe"].includes(t));
               if (!(nm.includes("kava") || (nm.includes("lounge") && looksVenue))) {
                 // Not obviously kava; do nothing (or show a toast)
                 return;
@@ -171,12 +178,29 @@ export default function Map() {
       // Initial bar markers will be added by updateBarMarkers
       updateBarMarkers();
 
-      // Initial kava place search
-      searchKavaPlaces(map, 20000, true).then(results => renderPlaces(map, results));
+      // Initial kava place search with auto-open functionality
+      searchKavaPlaces(map, 20000, true).then(results => {
+        setKavaPlaces(results);
+        renderPlaces(map, results, (place) => {
+          setSelectedPlace(place);
+          setSelectedBar(null);
+        });
+        
+        // Auto-open first/nearest result on load
+        if (results.length > 0 && !selectedPlace) {
+          setSelectedPlace(results[0]);
+        }
+      });
 
       // Refresh kava places when user pans/zooms, but debounce to save quota
       map.addListener("idle", debounce(() => {
-        searchKavaPlaces(map, 20000, true).then(results => renderPlaces(map, results));
+        searchKavaPlaces(map, 20000, true).then(results => {
+          setKavaPlaces(results);
+          renderPlaces(map, results, (place) => {
+            setSelectedPlace(place);
+            setSelectedBar(null);
+          });
+        });
       }, 600));
     } catch (error) {
       console.error("Error loading Google Maps:", error);

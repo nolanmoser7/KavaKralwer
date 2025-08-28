@@ -44,10 +44,14 @@ export async function searchKavaPlaces(
   const results = (await Promise.all(calls)).flat();
   const unique = uniqBy(results, p => p.place_id!);
 
-  // Final guard: keep obvious kava venues or lounges
+  // Final guard: keep obvious kava venues or lounges (exclude night_club)
   const filtered = unique.filter((p) => {
     const name = (p.name ?? "").toLowerCase();
     const types = (p.types ?? []).map(t => t.toLowerCase());
+    
+    // Exclude night clubs explicitly
+    if (types.includes("night_club")) return false;
+    
     const looksLikeVenue = types.some(t => ["bar", "cafe"].includes(t));
     return name.includes("kava") || (name.includes("lounge") && looksLikeVenue);
   });
