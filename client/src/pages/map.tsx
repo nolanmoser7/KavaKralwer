@@ -54,7 +54,7 @@ export default function Map() {
 
   // Separate effect for updating bar markers when bars data changes
   useEffect(() => {
-    if (mapInstanceRef.current && bars.length > 0) {
+    if (mapInstanceRef.current && (bars as any[]).length > 0) {
       updateBarMarkers();
     }
   }, [bars]);

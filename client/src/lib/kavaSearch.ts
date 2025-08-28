@@ -5,7 +5,7 @@ export type Place = google.maps.places.PlaceResult;
 function uniqBy<T, K>(arr: T[], key: (x: T) => K) {
   const m = new Map<K, T>();
   for (const item of arr) m.set(key(item), item);
-  return [...m.values()];
+  return Array.from(m.values());
 }
 
 export async function searchKavaPlaces(
@@ -22,7 +22,7 @@ export async function searchKavaPlaces(
     new Promise<Place[]>((resolve) => {
       svc.nearbySearch(
         { location: center, radius: radiusMeters, keyword, type },
-        (results, status) => {
+        (results: google.maps.places.PlaceResult[] | null, status: google.maps.places.PlacesServiceStatus) => {
           if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
             resolve([]);
           } else {
@@ -47,12 +47,12 @@ export async function searchKavaPlaces(
   // Final guard: keep obvious kava venues or lounges (exclude night_club)
   const filtered = unique.filter((p) => {
     const name = (p.name ?? "").toLowerCase();
-    const types = (p.types ?? []).map(t => t.toLowerCase());
+    const types = (p.types ?? []).map((t: string) => t.toLowerCase());
     
     // Exclude night clubs explicitly
     if (types.includes("night_club")) return false;
     
-    const looksLikeVenue = types.some(t => ["bar", "cafe"].includes(t));
+    const looksLikeVenue = types.some((t: string) => ["bar", "cafe"].includes(t));
     return name.includes("kava") || (name.includes("lounge") && looksLikeVenue);
   });
 

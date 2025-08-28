@@ -31,9 +31,9 @@ export function renderPlaces(
 }
 
 export function debounce<T extends (...a: any[]) => void>(fn: T, ms = 500): T {
-  let t: any;
+  let t: number | undefined;
   return function(this: any, ...args: any[]) {
     clearTimeout(t);
-    t = setTimeout(() => fn.apply(this, args), ms);
+    t = window.setTimeout(() => fn.apply(this, args), ms);
   } as T;
 }

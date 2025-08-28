@@ -41,10 +41,10 @@ export function loadGoogleMaps(): Promise<void> {
 
     // Create callback function
     const callbackName = 'initGoogleMaps_' + Date.now();
-    window[callbackName as keyof Window] = () => {
+    (window as any)[callbackName] = () => {
       isLoaded = true;
       isLoading = false;
-      delete window[callbackName as keyof Window];
+      delete (window as any)[callbackName];
       resolve();
     };
 
