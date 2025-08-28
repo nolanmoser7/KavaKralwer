@@ -9,7 +9,7 @@ let isLoading = false;
 let isLoaded = false;
 
 export function loadGoogleMaps(): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     // If already loaded, resolve immediately
     if (isLoaded && window.google?.maps) {
       resolve();
@@ -39,27 +39,42 @@ export function loadGoogleMaps(): Promise<void> {
       return;
     }
 
-    // Create callback function
-    const callbackName = 'initGoogleMaps_' + Date.now();
-    (window as any)[callbackName] = () => {
-      isLoaded = true;
-      isLoading = false;
-      delete (window as any)[callbackName];
-      resolve();
-    };
+    try {
+      // Create callback function
+      const callbackName = 'initGoogleMaps_' + Date.now();
+      (window as any)[callbackName] = async () => {
+        try {
+          // @ts-ignore
+          await google.maps.importLibrary("maps");
+          // @ts-ignore
+          await google.maps.importLibrary("places");
+          
+          isLoaded = true;
+          isLoading = false;
+          delete (window as any)[callbackName];
+          resolve();
+        } catch (error) {
+          isLoading = false;
+          reject(new Error('Failed to load Google Maps libraries: ' + error));
+        }
+      };
 
-    // Create and append script
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=${callbackName}`;
-    script.async = true;
-    script.defer = true;
-    
-    script.onerror = () => {
-      isLoading = false;
-      reject(new Error('Failed to load Google Maps API'));
-    };
+      // Create and append script
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=${callbackName}`;
+      script.async = true;
+      script.defer = true;
+      
+      script.onerror = () => {
+        isLoading = false;
+        reject(new Error('Failed to load Google Maps API'));
+      };
 
-    document.head.appendChild(script);
+      document.head.appendChild(script);
+    } catch (error) {
+      isLoading = false;
+      reject(error);
+    }
   });
 }
 
