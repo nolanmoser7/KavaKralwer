@@ -108,7 +108,7 @@ export default function Map() {
               // Optional: ignore non-kava picks
               const nm = (place.name ?? "").toLowerCase();
               const ty = (place.types ?? []).map(t => t.toLowerCase());
-              const looksVenue = ty.some(t => ["bar", "cafe", "night_club"].includes(t));
+              const looksVenue = ty.some(t => ["bar", "cafe"].includes(t));
               if (!(nm.includes("kava") || (nm.includes("lounge") && looksVenue))) {
                 // Not obviously kava; do nothing (or show a toast)
                 return;
