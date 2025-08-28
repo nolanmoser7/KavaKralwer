@@ -106,34 +106,19 @@ export default function Map() {
                 return;
               }
 
-              // Optional: ignore non-kava picks (excluding night_club)
-              const nm = (place.name ?? "").toLowerCase();
-              const ty = (place.types ?? []).map((t: string) => t.toLowerCase());
-              
-              // Exclude night clubs explicitly
-              if (ty.includes("night_club")) {
-                return;
-              }
-              
-              const looksVenue = ty.some((t: string) => ["bar", "cafe"].includes(t));
-              if (!(nm.includes("kava") || (nm.includes("lounge") && looksVenue))) {
-                // Not obviously kava; do nothing (or show a toast)
-                return;
-              }
-
-              // Recommended pattern for proper zoom handling
+              // Always center and zoom to the selected place
               if (place.geometry.viewport) {
                 map.fitBounds(place.geometry.viewport);
                 const once = map.addListener("idle", () => {
                   once.remove();
-                  map.setZoom(19); // max zoom
+                  map.setZoom(17); // reasonable zoom level
                 });
               } else if (place.geometry.location) {
                 map.setCenter(place.geometry.location);
-                map.setZoom(19);
+                map.setZoom(17);
               }
 
-              // Optionally drop a marker for the selected place
+              // Add a marker for the selected place
               if (place.geometry.location) {
                 new (window as any).google.maps.Marker({ 
                   map, 
@@ -142,7 +127,7 @@ export default function Map() {
                 });
               }
 
-              // Set the selected place to show the card (don't update userLocation to prevent map reset)
+              // Set the selected place to show the card
               setSelectedPlace(place);
               setSelectedBar(null); // Clear any selected bar
               
