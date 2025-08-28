@@ -289,7 +289,7 @@ export default function Map() {
                 📍
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-800 text-lg truncate" data-testid="text-selected-place-name">
+                <h3 className="font-semibold text-gray-800 text-lg" data-testid="text-selected-place-name">
                   {selectedPlace.name || 'Unknown Place'}
                 </h3>
                 <p className="text-gray-500 text-sm" data-testid="text-selected-place-address">
